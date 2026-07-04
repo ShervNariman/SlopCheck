@@ -7,8 +7,8 @@ to add layers, plugins systems, or abstractions the MVP doesn't need yet.
 
 ## Current state (as of this writing)
 
-Tasks 001 (clean CLI structure), 001a (verification scripts), and 002 (rule engine) are
-complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the `diff` command's
+Tasks 001 (clean CLI structure), 001a (verification scripts), 002 (rule engine), 003 (findings
+model), and 004 (core rules — satisfied by 002, closed retrospectively) are complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the `diff` command's
 orchestration, and console printing). Git diff reading lives in `src/git/diff.ts`. Rule
 execution now matches the target layout below: `src/rules/types.ts` defines the `Rule`
 interface, `src/rules/index.ts` is the rule registry, and one file per rule

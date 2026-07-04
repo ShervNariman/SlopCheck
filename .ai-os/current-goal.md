@@ -33,7 +33,7 @@ Complete the SlopCheck MVP as a polished local CLI.
       can verify reliably)
 - [x] 002 — Add rule engine
 - [x] 003 — Add findings model
-- [ ] 004 — Add core rules
+- [x] 004 — Add core rules (satisfied by Task 002; closed retrospectively by QA review)
 - [ ] 005 — Add risk scoring
 - [ ] 006 — Add console reporter
 - [ ] 007 — Add JSON reporter
