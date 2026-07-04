@@ -22,12 +22,15 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [ ] README explains install and usage
 - [ ] GitHub Action example exists
 - [ ] npm publishing prep is complete (package metadata, `bin` entry, build output verified)
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
 
 ## Progress
 
 - [x] 001 — Clean CLI structure
+- [x] 001a — Add project verification scripts (prerequisite/tooling task, not one of the 12
+      numbered backlog items — fixed `pnpm build`/`pnpm typecheck`/`pnpm test` so future tasks
+      can verify reliably)
 - [ ] 002 — Add rule engine
 - [ ] 003 — Add findings model
 - [ ] 004 — Add core rules
