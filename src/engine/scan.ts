@@ -13,7 +13,12 @@ export function scan(diff: string): Finding[] {
 
     for (const rule of rules) {
       if (rule.check(clean)) {
-        findings.push({ severity: rule.severity, message: `${rule.description}: ${clean}` });
+        findings.push({
+          ruleId: rule.id,
+          severity: rule.severity,
+          message: `${rule.description}: ${clean}`,
+          line: clean,
+        });
       }
     }
   }

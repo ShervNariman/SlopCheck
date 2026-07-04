@@ -16,8 +16,11 @@ interface, `src/rules/index.ts` is the rule registry, and one file per rule
 each check. `src/engine/scan.ts` extracts added diff lines and runs every registered rule
 against them, returning `Finding[]`. The old interim `src/scan/scanDiff.ts` module (and the
 `src/scan/` folder) has been removed — `cli.ts` calls the engine's `scan()` function directly.
-The shared `Finding` type still lives in `src/findings/types.ts` in its original minimal shape
-(`{ severity, message }`) — formalizing it further (e.g. adding `ruleId`) is backlog item 3.
+Task 003 (findings model) is also complete: `src/findings/types.ts` now matches the target
+`Finding` shape below exactly (`ruleId`, `severity`, `message`, optional `line`), and
+`src/engine/scan.ts` sets `ruleId` (from the originating rule's `id`) and `line` (the cleaned
+added-line text) on every finding it produces. `src/cli.ts`'s `printFindings` was not changed —
+it only ever read `severity`/`message`, so console output is unaffected by the richer shape.
 `src/example.ts` is a sample file with intentionally risky patterns used for manual testing and
 is unchanged.
 
