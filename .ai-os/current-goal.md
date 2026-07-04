@@ -14,7 +14,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] Rule engine exists (rules are pluggable units, not inline `if` statements in the CLI)
 - [x] Findings model exists (a shared `Finding` type/module used across rules and reporters)
 - [x] Risk scoring exists (patch-level or run-level score derived from findings)
-- [ ] Console reporter exists (human-readable terminal output)
+- [x] Console reporter exists (human-readable terminal output)
 - [ ] JSON reporter exists (machine-readable output for tooling/CI)
 - [ ] Markdown reporter exists (suitable for pasting into a PR comment)
 - [ ] Tests exist for core rules (`any`, `@ts-ignore`, `TODO`/`FIXME`/`HACK`, `console.log`,
@@ -35,7 +35,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] 003 — Add findings model
 - [x] 004 — Add core rules (satisfied by Task 002; closed retrospectively by QA review)
 - [x] 005 — Add risk scoring
-- [ ] 006 — Add console reporter
+- [x] 006 — Add console reporter
 - [ ] 007 — Add JSON reporter
 - [ ] 008 — Add Markdown reporter
 - [ ] 009 — Add tests

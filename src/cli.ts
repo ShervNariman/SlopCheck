@@ -1,29 +1,10 @@
 import { Command } from "commander";
 import { getGitDiff } from "./git/diff.js";
 import { scan } from "./engine/scan.js";
-import type { Finding } from "./findings/types.js";
-import { scoreRisk, type RiskResult } from "./scoring/risk-score.js";
+import { scoreRisk } from "./scoring/risk-score.js";
+import { reportConsole } from "./reporters/console.js";
 
 const program = new Command();
-
-function printFindings(findings: Finding[]) {
-  if (findings.length === 0) {
-    console.log("SlopCheck found no obvious risky AI-generated patch patterns.");
-    return;
-  }
-
-  console.log(`\nSlopCheck found ${findings.length} potential issue(s):\n`);
-
-  for (const finding of findings) {
-    console.log(`[${finding.severity.toUpperCase()}] ${finding.message}`);
-  }
-
-  console.log("");
-}
-
-function printRiskResult(risk: RiskResult) {
-  console.log(`Risk score: ${risk.score}/100 (${risk.level}) — ${risk.summary}`);
-}
 
 program
   .name("slopcheck")
@@ -42,10 +23,8 @@ program
     }
 
     const findings = scan(diff);
-    printFindings(findings);
-
     const risk = scoreRisk(findings);
-    printRiskResult(risk);
+    reportConsole(findings, risk);
 
     const hasHighSeverityFinding = findings.some((finding) => finding.severity === "high");
     if (hasHighSeverityFinding || risk.level === "high") {

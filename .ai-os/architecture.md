@@ -8,37 +8,26 @@ to add layers, plugins systems, or abstractions the MVP doesn't need yet.
 ## Current state (as of this writing)
 
 Tasks 001 (clean CLI structure), 001a (verification scripts), 002 (rule engine), 003 (findings
-model), 004 (core rules — satisfied by 002, closed retrospectively), and 005 (risk scoring) are
-complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the `diff` command's
-orchestration, and console printing). Git diff reading lives in `src/git/diff.ts`. Rule
-execution now matches the target layout below: `src/rules/types.ts` defines the `Rule`
+model), 004 (core rules — satisfied by 002, closed retrospectively), 005 (risk scoring), and 006
+(console reporter) are complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the
+`diff` command's orchestration, exit-code setting, and the "no git diff" message). It no longer
+contains finding or risk-score formatting logic. Git diff reading lives in `src/git/diff.ts`.
+Rule execution matches the target layout below: `src/rules/types.ts` defines the `Rule`
 interface, `src/rules/index.ts` is the rule registry, and one file per rule
 (`any-type.ts`, `ts-ignore.ts`, `todo-fixme.ts`, `console-log.ts`, `broad-catch.ts`) implements
 each check. `src/engine/scan.ts` extracts added diff lines and runs every registered rule
-against them, returning `Finding[]`. The old interim `src/scan/scanDiff.ts` module (and the
-`src/scan/` folder) has been removed — `cli.ts` calls the engine's `scan()` function directly.
-`src/findings/types.ts` matches the target `Finding` shape below exactly (`ruleId`, `severity`,
-`message`, optional `line`), and `src/engine/scan.ts` sets `ruleId` and `line` on every finding
-it produces.
+against them, returning `Finding[]`. `src/findings/types.ts` matches the target `Finding` shape
+(`ruleId`, `severity`, `message`, optional `line`).
 
-`src/scoring/risk-score.ts` now exists and matches the target layout: `scoreRisk(findings:
-Finding[]): RiskResult` is a pure function with no CLI/git dependency. It sums a per-severity
-weight for every finding (`high` = 40, `medium` = 20, `low` = 10), caps the total at 100, and
-derives a `level` (`"low"` for 0–24, `"medium"` for 25–59, `"high"` for 60–100) plus a
-`summary` string. A patch with zero findings short-circuits to `{ score: 0, level: "low",
-summary: "No risky patterns detected." }` rather than falling through the weighted-sum path, so
-it's textually distinguishable from a scored-but-low patch even though both currently present as
-`0`/`"low"`. `src/cli.ts`'s `printFindings` output is unchanged; after it, the CLI now also
-calls `scoreRisk()` and prints one additional `Risk score: N/100 (level) — summary` line. Exit
-code 1 is set when either a high-severity finding exists (the original, unweakened check) or the
-overall `level` is `"high"` — the first condition is kept explicitly because a single
-high-severity finding alone (score 40) lands in the `"medium"` level band, not `"high"`, so
-relying on `level` alone would have silently loosened the pre-existing "any high severity finding
-→ exit 1" guarantee.
+`src/scoring/risk-score.ts` provides `scoreRisk(findings: Finding[]): RiskResult` — a pure
+function with no CLI/git dependency. `src/reporters/console.ts` provides
+`reportConsole(findings: Finding[], risk: RiskResult): void` — also pure with respect to
+git/rules/engine; it prints the findings list (or the "no obvious risky patterns" message) and the
+`Risk score: N/100 (level) — summary` line. `src/cli.ts`'s `diff` action calls
+`getGitDiff → scan → scoreRisk → reportConsole`, then sets exit code 1 when either a
+high-severity finding exists or `risk.level === "high"`.
 
-This structure still does not fully match the full target layout below — there is only one
-reporter (console, still inline in `cli.ts`). JSON and Markdown reporters come from backlog
-items 7–8.
+JSON and Markdown reporters (backlog items 7–8) are still pending.
 
 ## Target module layout
 
@@ -138,11 +127,15 @@ src/
 
 ### Reporters (`src/reporters/`)
 
-- `console.ts` — today's human-readable terminal output (severity-tagged lines + summary).
-- `json.ts` — structured `{ findings, score }` output for CI/tooling to consume.
-- `markdown.ts` — a Markdown block suitable for pasting into or auto-posting to a PR comment.
-- Reporters are pure functions: `(findings: Finding[], score: RiskScore) => string`. They do not
-  read files, call git, or contain rule logic.
+- `console.ts` — implemented (task 006): `reportConsole(findings: Finding[], risk: RiskResult):
+  void`. Prints the findings list (or the "no obvious risky patterns" message when `findings` is
+  empty within a scanned diff) and the `Risk score: N/100 (level) — summary` line. Depends only
+  on `Finding` and `RiskResult` types — no git, rules, or engine imports.
+- `json.ts` — structured `{ findings, score }` output for CI/tooling to consume (backlog item 7).
+- `markdown.ts` — a Markdown block suitable for pasting into or auto-posting to a PR comment
+  (backlog item 8).
+- Reporters do not read files, call git, or contain rule logic. `src/cli.ts` calls reporters
+  after `scan()` and `scoreRisk()` and is responsible for setting exit codes.
 
 ### Config loader (later)
 
