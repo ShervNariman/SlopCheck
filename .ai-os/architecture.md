@@ -8,8 +8,8 @@ to add layers, plugins systems, or abstractions the MVP doesn't need yet.
 ## Current state (as of this writing)
 
 Tasks 001 (clean CLI structure), 001a (verification scripts), 002 (rule engine), 003 (findings
-model), 004 (core rules — satisfied by 002, closed retrospectively), 005 (risk scoring), and 006
-(console reporter) are complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the
+model), 004 (core rules — satisfied by 002, closed retrospectively), 005 (risk scoring), 006
+(console reporter), 007 (JSON reporter), and 008 (Markdown reporter) are complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the
 `diff` command's orchestration, exit-code setting, and the "no git diff" message). It no longer
 contains finding or risk-score formatting logic. Git diff reading lives in `src/git/diff.ts`.
 Rule execution matches the target layout below: `src/rules/types.ts` defines the `Rule`
@@ -27,16 +27,18 @@ git/rules/engine; it prints the findings list (or the "no obvious risky patterns
 `reportJson(findings: Finding[], risk: RiskResult): string`, returning a pretty-printed JSON
 string containing `findings`, `risk`, and top-level `findingCount`/`highCount`/`mediumCount`/
 `lowCount` — also pure, no git/rules/engine dependency, uses only built-in `JSON.stringify`.
+`src/reporters/markdown.ts` provides `reportMarkdown(findings: Finding[], risk: RiskResult):
+string`, returning a Markdown string with a SlopCheck heading, risk score/level, a finding-count
+table, and per-finding bullets (severity, `ruleId`, message) — also pure, no git/rules/engine
+dependency.
 
-`src/cli.ts`'s `diff` command has a `--format <format>` option (`"console"` default, or
-`"json"`) plus a `--json` boolean convenience alias. Its action calls
-`getGitDiff → scan → scoreRisk`, then branches to `reportConsole` or `console.log(reportJson(...))`
-based on the resolved format, then sets exit code 1 when either a high-severity finding exists
-or `risk.level === "high"` — this exit-code check is unconditional on format, so behavior is
-identical in both modes. The pre-existing "No git diff found..." message is printed before format
-branching (there is nothing to report yet) and is unaffected by `--format`/`--json`.
-
-The Markdown reporter (backlog item 8) is still pending.
+`src/cli.ts`'s `diff` command has a `--format <format>` option (`"console"` default, `"json"`,
+or `"markdown"`) plus a `--json` boolean convenience alias. Its action calls
+`getGitDiff → scan → scoreRisk`, then branches to `reportConsole`, `reportJson`, or
+`reportMarkdown` based on the resolved format, then sets exit code 1 when either a high-severity
+finding exists or `risk.level === "high"` — exit-code behavior is unconditional on format. The
+pre-existing "No git diff found..." message is printed before format branching and is unaffected
+by `--format`/`--json`.
 
 ## Target module layout
 
@@ -146,8 +148,11 @@ src/
   — no git/rules/engine imports, no new dependency (built-in `JSON.stringify`). Selected via
   `slopcheck diff --format json` or the `--json` alias; stdout contains only the JSON payload
   (no console text mixed in) whenever a diff exists.
-- `markdown.ts` — a Markdown block suitable for pasting into or auto-posting to a PR comment
-  (backlog item 8).
+- `markdown.ts` — implemented (task 008): `reportMarkdown(findings: Finding[], risk: RiskResult):
+  string`. Returns a Markdown block with `## SlopCheck` heading, risk score/level, a finding-count
+  table, and per-finding bullets (`[SEVERITY]` + `` `ruleId` `` + message). Same purity
+  constraints as other reporters. Selected via `slopcheck diff --format markdown`; stdout
+  contains only the Markdown payload (no console text mixed in) whenever a diff exists.
 - Reporters do not read files, call git, or contain rule logic. `src/cli.ts` calls exactly one
   reporter per invocation (based on `--format`/`--json`) after `scan()` and `scoreRisk()`, and is
   responsible for setting exit codes — format selection never affects the exit code.

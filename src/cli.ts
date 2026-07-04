@@ -4,6 +4,7 @@ import { scan } from "./engine/scan.js";
 import { scoreRisk } from "./scoring/risk-score.js";
 import { reportConsole } from "./reporters/console.js";
 import { reportJson } from "./reporters/json.js";
+import { reportMarkdown } from "./reporters/markdown.js";
 
 const program = new Command();
 
@@ -15,7 +16,7 @@ program
 program
   .command("diff")
   .description("Scan the current git diff for risky changes.")
-  .option("--format <format>", "output format: console or json", "console")
+  .option("--format <format>", "output format: console, json, or markdown", "console")
   .option("--json", "shorthand for --format json")
   .action(async (options: { format: string; json?: boolean }) => {
     const format = options.json ? "json" : options.format;
@@ -32,6 +33,8 @@ program
 
     if (format === "json") {
       console.log(reportJson(findings, risk));
+    } else if (format === "markdown") {
+      console.log(reportMarkdown(findings, risk));
     } else {
       reportConsole(findings, risk);
     }
