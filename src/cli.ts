@@ -3,6 +3,7 @@ import { getGitDiff } from "./git/diff.js";
 import { scan } from "./engine/scan.js";
 import { scoreRisk } from "./scoring/risk-score.js";
 import { reportConsole } from "./reporters/console.js";
+import { reportJson } from "./reporters/json.js";
 
 const program = new Command();
 
@@ -14,7 +15,11 @@ program
 program
   .command("diff")
   .description("Scan the current git diff for risky changes.")
-  .action(async () => {
+  .option("--format <format>", "output format: console or json", "console")
+  .option("--json", "shorthand for --format json")
+  .action(async (options: { format: string; json?: boolean }) => {
+    const format = options.json ? "json" : options.format;
+
     const diff = await getGitDiff();
 
     if (!diff.trim()) {
@@ -24,7 +29,12 @@ program
 
     const findings = scan(diff);
     const risk = scoreRisk(findings);
-    reportConsole(findings, risk);
+
+    if (format === "json") {
+      console.log(reportJson(findings, risk));
+    } else {
+      reportConsole(findings, risk);
+    }
 
     const hasHighSeverityFinding = findings.some((finding) => finding.severity === "high");
     if (hasHighSeverityFinding || risk.level === "high") {

@@ -23,11 +23,20 @@ against them, returning `Finding[]`. `src/findings/types.ts` matches the target 
 function with no CLI/git dependency. `src/reporters/console.ts` provides
 `reportConsole(findings: Finding[], risk: RiskResult): void` — also pure with respect to
 git/rules/engine; it prints the findings list (or the "no obvious risky patterns" message) and the
-`Risk score: N/100 (level) — summary` line. `src/cli.ts`'s `diff` action calls
-`getGitDiff → scan → scoreRisk → reportConsole`, then sets exit code 1 when either a
-high-severity finding exists or `risk.level === "high"`.
+`Risk score: N/100 (level) — summary` line. `src/reporters/json.ts` provides
+`reportJson(findings: Finding[], risk: RiskResult): string`, returning a pretty-printed JSON
+string containing `findings`, `risk`, and top-level `findingCount`/`highCount`/`mediumCount`/
+`lowCount` — also pure, no git/rules/engine dependency, uses only built-in `JSON.stringify`.
 
-JSON and Markdown reporters (backlog items 7–8) are still pending.
+`src/cli.ts`'s `diff` command has a `--format <format>` option (`"console"` default, or
+`"json"`) plus a `--json` boolean convenience alias. Its action calls
+`getGitDiff → scan → scoreRisk`, then branches to `reportConsole` or `console.log(reportJson(...))`
+based on the resolved format, then sets exit code 1 when either a high-severity finding exists
+or `risk.level === "high"` — this exit-code check is unconditional on format, so behavior is
+identical in both modes. The pre-existing "No git diff found..." message is printed before format
+branching (there is nothing to report yet) and is unaffected by `--format`/`--json`.
+
+The Markdown reporter (backlog item 8) is still pending.
 
 ## Target module layout
 
@@ -131,11 +140,17 @@ src/
   void`. Prints the findings list (or the "no obvious risky patterns" message when `findings` is
   empty within a scanned diff) and the `Risk score: N/100 (level) — summary` line. Depends only
   on `Finding` and `RiskResult` types — no git, rules, or engine imports.
-- `json.ts` — structured `{ findings, score }` output for CI/tooling to consume (backlog item 7).
+- `json.ts` — implemented (task 007): `reportJson(findings: Finding[], risk: RiskResult):
+  string`. Returns a pretty-printed JSON string with `findings`, `risk`, and top-level
+  `findingCount`/`highCount`/`mediumCount`/`lowCount`. Same purity constraints as `console.ts`
+  — no git/rules/engine imports, no new dependency (built-in `JSON.stringify`). Selected via
+  `slopcheck diff --format json` or the `--json` alias; stdout contains only the JSON payload
+  (no console text mixed in) whenever a diff exists.
 - `markdown.ts` — a Markdown block suitable for pasting into or auto-posting to a PR comment
   (backlog item 8).
-- Reporters do not read files, call git, or contain rule logic. `src/cli.ts` calls reporters
-  after `scan()` and `scoreRisk()` and is responsible for setting exit codes.
+- Reporters do not read files, call git, or contain rule logic. `src/cli.ts` calls exactly one
+  reporter per invocation (based on `--format`/`--json`) after `scan()` and `scoreRisk()`, and is
+  responsible for setting exit codes — format selection never affects the exit code.
 
 ### Config loader (later)
 
