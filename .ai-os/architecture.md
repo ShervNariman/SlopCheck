@@ -8,7 +8,8 @@ to add layers, plugins systems, or abstractions the MVP doesn't need yet.
 ## Current state (as of this writing)
 
 Tasks 001 (clean CLI structure), 001a (verification scripts), 002 (rule engine), 003 (findings
-model), and 004 (core rules — satisfied by 002, closed retrospectively) are complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the `diff` command's
+model), 004 (core rules — satisfied by 002, closed retrospectively), and 005 (risk scoring) are
+complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the `diff` command's
 orchestration, and console printing). Git diff reading lives in `src/git/diff.ts`. Rule
 execution now matches the target layout below: `src/rules/types.ts` defines the `Rule`
 interface, `src/rules/index.ts` is the rule registry, and one file per rule
@@ -16,17 +17,28 @@ interface, `src/rules/index.ts` is the rule registry, and one file per rule
 each check. `src/engine/scan.ts` extracts added diff lines and runs every registered rule
 against them, returning `Finding[]`. The old interim `src/scan/scanDiff.ts` module (and the
 `src/scan/` folder) has been removed — `cli.ts` calls the engine's `scan()` function directly.
-Task 003 (findings model) is also complete: `src/findings/types.ts` now matches the target
-`Finding` shape below exactly (`ruleId`, `severity`, `message`, optional `line`), and
-`src/engine/scan.ts` sets `ruleId` (from the originating rule's `id`) and `line` (the cleaned
-added-line text) on every finding it produces. `src/cli.ts`'s `printFindings` was not changed —
-it only ever read `severity`/`message`, so console output is unaffected by the richer shape.
-`src/example.ts` is a sample file with intentionally risky patterns used for manual testing and
-is unchanged.
+`src/findings/types.ts` matches the target `Finding` shape below exactly (`ruleId`, `severity`,
+`message`, optional `line`), and `src/engine/scan.ts` sets `ruleId` and `line` on every finding
+it produces.
 
-This structure still does not fully match the full target layout below — there is no risk
-scorer yet, and only one reporter (console, still inline in `cli.ts`). Those come from backlog
-items 5–8.
+`src/scoring/risk-score.ts` now exists and matches the target layout: `scoreRisk(findings:
+Finding[]): RiskResult` is a pure function with no CLI/git dependency. It sums a per-severity
+weight for every finding (`high` = 40, `medium` = 20, `low` = 10), caps the total at 100, and
+derives a `level` (`"low"` for 0–24, `"medium"` for 25–59, `"high"` for 60–100) plus a
+`summary` string. A patch with zero findings short-circuits to `{ score: 0, level: "low",
+summary: "No risky patterns detected." }` rather than falling through the weighted-sum path, so
+it's textually distinguishable from a scored-but-low patch even though both currently present as
+`0`/`"low"`. `src/cli.ts`'s `printFindings` output is unchanged; after it, the CLI now also
+calls `scoreRisk()` and prints one additional `Risk score: N/100 (level) — summary` line. Exit
+code 1 is set when either a high-severity finding exists (the original, unweakened check) or the
+overall `level` is `"high"` — the first condition is kept explicitly because a single
+high-severity finding alone (score 40) lands in the `"medium"` level band, not `"high"`, so
+relying on `level` alone would have silently loosened the pre-existing "any high severity finding
+→ exit 1" guarantee.
+
+This structure still does not fully match the full target layout below — there is only one
+reporter (console, still inline in `cli.ts`). JSON and Markdown reporters come from backlog
+items 7–8.
 
 ## Target module layout
 
@@ -108,9 +120,21 @@ src/
 
 ### Risk scorer (`src/scoring/risk-score.ts`)
 
-- Takes `Finding[]` and produces a simple, explainable score/summary (e.g. counts by severity
-  plus an overall verdict like `pass` / `warn` / `block`). Keep the formula simple and
-  documented — no hidden weights that are hard to explain to a user.
+- `scoreRisk(findings: Finding[]): RiskResult` — a pure function, no CLI/git dependency, fully
+  unit-testable in isolation. Implemented (task 005) with an explicit, documented formula:
+  per-severity weights `high = 40`, `medium = 20`, `low = 10`, summed and capped at 100, then
+  mapped to `level` (`0–24` → `"low"`, `25–59` → `"medium"`, `60–100` → `"high"`). Zero findings
+  is an explicit short-circuit case (`score: 0, level: "low", summary: "No risky patterns
+  detected."`) rather than falling through the weighted-sum path.
+- `RiskResult` shape: `{ score, level, summary, findingCount, highCount, mediumCount, lowCount
+  }`. Keep the formula simple and documented in code — no hidden weights, no per-rule overrides,
+  no config-driven tuning for the MVP.
+- `src/cli.ts` calls this after `scan()` and prints one additional line
+  (`Risk score: N/100 (level) — summary`); it does not replace or alter the existing per-finding
+  console output. Exit code 1 is set when a high-severity finding exists OR `level` is `"high"`
+  — both checks are kept because a single high-severity finding (score 40) alone falls in the
+  `"medium"` band, so `level` alone isn't sufficient to preserve the original
+  "any high severity finding → exit 1" guarantee.
 
 ### Reporters (`src/reporters/`)
 

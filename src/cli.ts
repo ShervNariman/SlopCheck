@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { getGitDiff } from "./git/diff.js";
 import { scan } from "./engine/scan.js";
 import type { Finding } from "./findings/types.js";
+import { scoreRisk, type RiskResult } from "./scoring/risk-score.js";
 
 const program = new Command();
 
@@ -18,6 +19,10 @@ function printFindings(findings: Finding[]) {
   }
 
   console.log("");
+}
+
+function printRiskResult(risk: RiskResult) {
+  console.log(`Risk score: ${risk.score}/100 (${risk.level}) — ${risk.summary}`);
 }
 
 program
@@ -39,7 +44,11 @@ program
     const findings = scan(diff);
     printFindings(findings);
 
-    if (findings.some((finding) => finding.severity === "high")) {
+    const risk = scoreRisk(findings);
+    printRiskResult(risk);
+
+    const hasHighSeverityFinding = findings.some((finding) => finding.severity === "high");
+    if (hasHighSeverityFinding || risk.level === "high") {
       process.exitCode = 1;
     }
   });
