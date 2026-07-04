@@ -7,10 +7,17 @@ to add layers, plugins systems, or abstractions the MVP doesn't need yet.
 
 ## Current state (as of this writing)
 
-`src/cli.ts` contains everything: CLI wiring, git diff reading, rule scanning (inline regexes),
-and console printing. `src/example.ts` is a sample file with intentionally risky patterns used
-for manual testing. This works but doesn't scale past one reporter or a handful of inline rules
-— hence task 001 (clean CLI structure) is first in the backlog.
+Task 001 (clean CLI structure) is complete. `src/cli.ts` is now the CLI entrypoint only
+(Commander wiring, the `diff` command's orchestration, and console printing). Git diff reading
+lives in `src/git/diff.ts`, and diff scanning (still a single `scanDiff` function with inline
+regex checks — the full rule engine/registry from the target layout below is not built yet)
+lives in `src/scan/scanDiff.ts`. The shared `Finding` type lives in `src/findings/types.ts`.
+`src/example.ts` is a sample file with intentionally risky patterns used for manual testing and
+is unchanged.
+
+This interim structure intentionally does not yet match the full target layout below — there is
+no `src/rules/` registry, no `src/engine/`, no risk scorer, and only one reporter (console,
+still inline in `cli.ts`). Those come from backlog items 2–8.
 
 ## Target module layout
 

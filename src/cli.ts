@@ -1,54 +1,9 @@
 import { Command } from "commander";
-import { execa } from "execa";
+import { getGitDiff } from "./git/diff.js";
+import { scanDiff } from "./scan/scanDiff.js";
+import type { Finding } from "./findings/types.js";
 
 const program = new Command();
-
-type Finding = {
-  severity: "high" | "medium" | "low";
-  message: string;
-};
-
-async function getGitDiff(): Promise<string> {
-  const cached = await execa("git", ["diff", "--cached", "--unified=0"], { reject: false });
-  if (cached.stdout.trim()) return cached.stdout;
-
-  const unstaged = await execa("git", ["diff", "--unified=0"], { reject: false });
-  return unstaged.stdout;
-}
-
-function scanDiff(diff: string): Finding[] {
-  const findings: Finding[] = [];
-
-  const addedLines = diff
-    .split("\n")
-    .filter((line) => line.startsWith("+") && !line.startsWith("+++"));
-
-  for (const line of addedLines) {
-    const clean = line.slice(1).trim();
-
-    if (/\bany\b/.test(clean)) {
-      findings.push({ severity: "medium", message: `Added TypeScript "any": ${clean}` });
-    }
-
-    if (clean.includes("@ts-ignore")) {
-      findings.push({ severity: "high", message: `Added @ts-ignore: ${clean}` });
-    }
-
-    if (/TODO|FIXME|HACK/i.test(clean)) {
-      findings.push({ severity: "low", message: `Added TODO/FIXME/HACK: ${clean}` });
-    }
-
-    if (/catch\s*\([^)]*\)\s*\{?\s*$/.test(clean)) {
-      findings.push({ severity: "medium", message: `Added broad catch block: ${clean}` });
-    }
-
-    if (clean.includes("console.log")) {
-      findings.push({ severity: "low", message: `Added console.log: ${clean}` });
-    }
-  }
-
-  return findings;
-}
 
 function printFindings(findings: Finding[]) {
   if (findings.length === 0) {

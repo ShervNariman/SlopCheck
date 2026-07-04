@@ -10,7 +10,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 
 ## Definition of Done
 
-- [ ] CLI has clean structure (entrypoint separated from diff-reading, scanning, and models)
+- [x] CLI has clean structure (entrypoint separated from diff-reading, scanning, and models)
 - [ ] Rule engine exists (rules are pluggable units, not inline `if` statements in the CLI)
 - [ ] Findings model exists (a shared `Finding` type/module used across rules and reporters)
 - [ ] Risk scoring exists (patch-level or run-level score derived from findings)
@@ -27,7 +27,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 
 ## Progress
 
-- [ ] 001 — Clean CLI structure
+- [x] 001 — Clean CLI structure
 - [ ] 002 — Add rule engine
 - [ ] 003 — Add findings model
 - [ ] 004 — Add core rules
