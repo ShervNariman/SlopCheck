@@ -11,7 +11,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 ## Definition of Done
 
 - [x] CLI has clean structure (entrypoint separated from diff-reading, scanning, and models)
-- [ ] Rule engine exists (rules are pluggable units, not inline `if` statements in the CLI)
+- [x] Rule engine exists (rules are pluggable units, not inline `if` statements in the CLI)
 - [ ] Findings model exists (a shared `Finding` type/module used across rules and reporters)
 - [ ] Risk scoring exists (patch-level or run-level score derived from findings)
 - [ ] Console reporter exists (human-readable terminal output)
@@ -31,7 +31,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] 001a — Add project verification scripts (prerequisite/tooling task, not one of the 12
       numbered backlog items — fixed `pnpm build`/`pnpm typecheck`/`pnpm test` so future tasks
       can verify reliably)
-- [ ] 002 — Add rule engine
+- [x] 002 — Add rule engine
 - [ ] 003 — Add findings model
 - [ ] 004 — Add core rules
 - [ ] 005 — Add risk scoring

@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { getGitDiff } from "./git/diff.js";
-import { scanDiff } from "./scan/scanDiff.js";
+import { scan } from "./engine/scan.js";
 import type { Finding } from "./findings/types.js";
 
 const program = new Command();
@@ -36,7 +36,7 @@ program
       return;
     }
 
-    const findings = scanDiff(diff);
+    const findings = scan(diff);
     printFindings(findings);
 
     if (findings.some((finding) => finding.severity === "high")) {

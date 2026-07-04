@@ -7,17 +7,23 @@ to add layers, plugins systems, or abstractions the MVP doesn't need yet.
 
 ## Current state (as of this writing)
 
-Task 001 (clean CLI structure) is complete. `src/cli.ts` is now the CLI entrypoint only
-(Commander wiring, the `diff` command's orchestration, and console printing). Git diff reading
-lives in `src/git/diff.ts`, and diff scanning (still a single `scanDiff` function with inline
-regex checks — the full rule engine/registry from the target layout below is not built yet)
-lives in `src/scan/scanDiff.ts`. The shared `Finding` type lives in `src/findings/types.ts`.
+Tasks 001 (clean CLI structure), 001a (verification scripts), and 002 (rule engine) are
+complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the `diff` command's
+orchestration, and console printing). Git diff reading lives in `src/git/diff.ts`. Rule
+execution now matches the target layout below: `src/rules/types.ts` defines the `Rule`
+interface, `src/rules/index.ts` is the rule registry, and one file per rule
+(`any-type.ts`, `ts-ignore.ts`, `todo-fixme.ts`, `console-log.ts`, `broad-catch.ts`) implements
+each check. `src/engine/scan.ts` extracts added diff lines and runs every registered rule
+against them, returning `Finding[]`. The old interim `src/scan/scanDiff.ts` module (and the
+`src/scan/` folder) has been removed — `cli.ts` calls the engine's `scan()` function directly.
+The shared `Finding` type still lives in `src/findings/types.ts` in its original minimal shape
+(`{ severity, message }`) — formalizing it further (e.g. adding `ruleId`) is backlog item 3.
 `src/example.ts` is a sample file with intentionally risky patterns used for manual testing and
 is unchanged.
 
-This interim structure intentionally does not yet match the full target layout below — there is
-no `src/rules/` registry, no `src/engine/`, no risk scorer, and only one reporter (console,
-still inline in `cli.ts`). Those come from backlog items 2–8.
+This structure still does not fully match the full target layout below — there is no risk
+scorer yet, and only one reporter (console, still inline in `cli.ts`). Those come from backlog
+items 5–8.
 
 ## Target module layout
 
