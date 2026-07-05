@@ -1,6 +1,6 @@
 {
-  "name": "slopcheck",
-  "version": "1.0.0",
+  "name": "@shervnariman/slopcheck",
+  "version": "0.1.0",
   "description": "Local, deterministic patch risk scanner that catches risky AI-generated or hard-to-review code changes before they land.",
   "type": "module",
   "bin": {
@@ -35,6 +35,9 @@
     "url": "https://github.com/ShervNariman/SlopCheck/issues"
   },
   "homepage": "https://github.com/ShervNariman/SlopCheck#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",

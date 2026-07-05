@@ -194,24 +194,28 @@ signup.
 SlopCheck is not published to npm yet. Once it is, the plan is:
 
 ```bash
-npx slopcheck diff
+npx @shervnariman/slopcheck diff
+npx @shervnariman/slopcheck diff --format json
+npx @shervnariman/slopcheck diff --format markdown
+npx @shervnariman/slopcheck diff --base origin/main --format markdown
 ```
 
-or a global install:
+The installed command is still `slopcheck` (via the `bin` entry). For a global install:
 
 ```bash
-npm install -g slopcheck
+npm install -g @shervnariman/slopcheck
 slopcheck diff
 ```
 
-`package.json` is already prepared for this (`bin` entry, `files`, `prepublishOnly`), and
-`pnpm pack` has been verified to produce a correct tarball — but no version has been published
-to the npm registry yet. Until then, use the [local install steps](#install-and-run) above.
+`package.json` is already prepared for this (`bin` entry, `files`, `prepublishOnly`,
+`publishConfig`), and `pnpm pack` has been verified to produce a correct tarball — but no
+version has been published to the npm registry yet. Until then, use the
+[local install steps](#install-and-run) above.
 
 ## Roadmap
 
-- **npm package** — publish to the registry so `npx slopcheck diff` works without cloning the
-  repo
+- **npm package** — publish to the registry so `npx @shervnariman/slopcheck diff` works without
+  cloning the repo
 - **More rules** — additional high-signal patterns as the set matures
 - **Config file** — enable/disable rules, severity overrides
 - **PR comment support** — post Markdown results directly on a pull request (beyond the step
