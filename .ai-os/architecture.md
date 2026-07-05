@@ -9,7 +9,8 @@ to add layers, plugins systems, or abstractions the MVP doesn't need yet.
 
 Tasks 001 (clean CLI structure), 001a (verification scripts), 002 (rule engine), 003 (findings
 model), 004 (core rules — satisfied by 002, closed retrospectively), 005 (risk scoring), 006
-(console reporter), 007 (JSON reporter), and 008 (Markdown reporter) are complete. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the
+(console reporter), 007 (JSON reporter), 008 (Markdown reporter), and 009 (tests) are complete.
+`src/cli.ts` is the CLI entrypoint only (Commander wiring, the
 `diff` command's orchestration, exit-code setting, and the "no git diff" message). It no longer
 contains finding or risk-score formatting logic. Git diff reading lives in `src/git/diff.ts`.
 Rule execution matches the target layout below: `src/rules/types.ts` defines the `Rule`
@@ -39,6 +40,14 @@ or `"markdown"`) plus a `--json` boolean convenience alias. Its action calls
 finding exists or `risk.level === "high"` — exit-code behavior is unconditional on format. The
 pre-existing "No git diff found..." message is printed before format branching and is unaffected
 by `--format`/`--json`.
+
+An automated Vitest suite now exists under `tests/`, mirroring `src/`'s structure
+(`tests/engine/scan.test.ts`, `tests/rules/rules.test.ts`, `tests/scoring/risk-score.test.ts`,
+`tests/reporters/{json,markdown,console}.test.ts`). It covers rule-engine aggregation and
+structured `Finding` fields, positive/negative cases for all 5 core rules, the risk-scoring
+formula (per-severity weights, the 100-point cap, and level thresholds), and reporter output
+shape/content for JSON, Markdown, and console. No `vitest.config` file is needed — Vitest's
+default glob already picks up files under `tests/`. Run via `pnpm test`.
 
 ## Target module layout
 

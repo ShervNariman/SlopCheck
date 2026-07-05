@@ -17,7 +17,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] Console reporter exists (human-readable terminal output)
 - [x] JSON reporter exists (machine-readable output for tooling/CI)
 - [x] Markdown reporter exists (suitable for pasting into a PR comment)
-- [ ] Tests exist for core rules (`any`, `@ts-ignore`, `TODO`/`FIXME`/`HACK`, `console.log`,
+- [x] Tests exist for core rules (`any`, `@ts-ignore`, `TODO`/`FIXME`/`HACK`, `console.log`,
       broad `catch`)
 - [ ] README explains install and usage
 - [ ] GitHub Action example exists
@@ -38,7 +38,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] 006 — Add console reporter
 - [x] 007 — Add JSON reporter
 - [x] 008 — Add Markdown reporter
-- [ ] 009 — Add tests
+- [x] 009 — Add tests
 - [ ] 010 — Add README
 - [ ] 011 — Add GitHub Action example
 - [ ] 012 — Prepare npm publishing
