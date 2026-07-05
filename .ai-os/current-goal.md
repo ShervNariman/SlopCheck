@@ -19,7 +19,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] Markdown reporter exists (suitable for pasting into a PR comment)
 - [x] Tests exist for core rules (`any`, `@ts-ignore`, `TODO`/`FIXME`/`HACK`, `console.log`,
       broad `catch`)
-- [ ] README explains install and usage
+- [x] README explains install and usage
 - [ ] GitHub Action example exists
 - [ ] npm publishing prep is complete (package metadata, `bin` entry, build output verified)
 - [x] `pnpm test` passes
@@ -39,7 +39,7 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] 007 — Add JSON reporter
 - [x] 008 — Add Markdown reporter
 - [x] 009 — Add tests
-- [ ] 010 — Add README
+- [x] 010 — Add README
 - [ ] 011 — Add GitHub Action example
 - [ ] 012 — Prepare npm publishing
 
