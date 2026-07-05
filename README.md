@@ -231,4 +231,4 @@ pnpm build       # Bundle to dist/
 
 ## License
 
-ISC
+MIT
