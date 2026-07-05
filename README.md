@@ -18,12 +18,14 @@ After an AI-assisted coding session, you want to know which lines in *this patch
 This is an early MVP. What works today:
 
 - `slopcheck diff` — scan staged changes (falls back to unstaged)
+- `--base <ref>` — diff against a base ref instead of local changes (for CI)
 - Five deterministic rules (see below)
 - Patch-level risk score (0–100)
 - Console, JSON, and Markdown output
-- Exit code 1 when risk is high or a high-severity finding exists (usable as a CI gate later)
+- Exit code 1 when risk is high or a high-severity finding exists — usable as a CI gate (see
+  [GitHub Actions](#github-actions) below)
 
-Not shipped yet: npm package install, GitHub Action example, config file, automatic PR comments.
+Not shipped yet: npm package install, config file, automatic PR comments.
 
 ## Install and run
 
@@ -47,6 +49,9 @@ pnpm tsx src/cli.ts diff --format json
 
 # Markdown (for pasting into a PR comment)
 pnpm tsx src/cli.ts diff --format markdown
+
+# Diff against a base ref instead of local changes (used in CI, see below)
+pnpm tsx src/cli.ts diff --base origin/main --format markdown
 ```
 
 If there is no diff, SlopCheck prints:
@@ -162,13 +167,55 @@ The score is capped at 100. The risk level is:
 
 SlopCheck exits with code 1 if any high-severity finding exists or the overall level is high.
 
+## GitHub Actions
+
+SlopCheck can run on pull requests via `--base <ref>`, which diffs against a base ref instead of
+local staged/unstaged changes:
+
+```bash
+pnpm tsx src/cli.ts diff --base origin/main --format markdown
+```
+
+An example workflow is included at [`.github/workflows/slopcheck.yml`](.github/workflows/slopcheck.yml). It:
+
+- Triggers on `pull_request`
+- Checks out the repo with full history (`fetch-depth: 0`, required for base-ref diffing)
+- Installs dependencies and builds the CLI with pnpm
+- Runs `slopcheck diff --base origin/${{ github.base_ref }} --format markdown` and appends the
+  result to the job's step summary (visible on the PR's checks tab)
+- Fails the check if SlopCheck's exit code is non-zero (high-severity finding or high overall
+  risk), since the run's exit code is the workflow step's exit code
+
+This uses only free GitHub-hosted runners — no paid services or third-party actions requiring
+signup.
+
+## Future npm usage (not yet published)
+
+SlopCheck is not published to npm yet. Once it is, the plan is:
+
+```bash
+npx slopcheck diff
+```
+
+or a global install:
+
+```bash
+npm install -g slopcheck
+slopcheck diff
+```
+
+`package.json` is already prepared for this (`bin` entry, `files`, `prepublishOnly`), and
+`pnpm pack` has been verified to produce a correct tarball — but no version has been published
+to the npm registry yet. Until then, use the [local install steps](#install-and-run) above.
+
 ## Roadmap
 
-- **GitHub Action** — run SlopCheck on pull requests in CI
-- **npm package** — `npx slopcheck diff` without cloning the repo
+- **npm package** — publish to the registry so `npx slopcheck diff` works without cloning the
+  repo
 - **More rules** — additional high-signal patterns as the set matures
 - **Config file** — enable/disable rules, severity overrides
-- **PR comment support** — post Markdown results directly on a pull request
+- **PR comment support** — post Markdown results directly on a pull request (beyond the step
+  summary the current GitHub Action example writes to)
 
 ## Development
 

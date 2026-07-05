@@ -18,10 +18,11 @@ program
   .description("Scan the current git diff for risky changes.")
   .option("--format <format>", "output format: console, json, or markdown", "console")
   .option("--json", "shorthand for --format json")
-  .action(async (options: { format: string; json?: boolean }) => {
+  .option("--base <ref>", "diff against a base ref instead of local staged/unstaged changes")
+  .action(async (options: { format: string; json?: boolean; base?: string }) => {
     const format = options.json ? "json" : options.format;
 
-    const diff = await getGitDiff();
+    const diff = await getGitDiff(options.base);
 
     if (!diff.trim()) {
       console.log("No git diff found. Make a code change first, then run SlopCheck.");

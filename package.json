@@ -1,17 +1,40 @@
 {
-  "name": "SlopCheck",
+  "name": "slopcheck",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Local, deterministic patch risk scanner that catches risky AI-generated or hard-to-review code changes before they land.",
+  "type": "module",
+  "bin": {
+    "slopcheck": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "dev": "tsx src/cli.ts"
+    "dev": "tsx src/cli.ts",
+    "prepublishOnly": "pnpm build"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "cli",
+    "code-review",
+    "static-analysis",
+    "git-diff",
+    "ai-generated-code",
+    "developer-tools"
+  ],
+  "author": "Sherv Nariman",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShervNariman/SlopCheck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ShervNariman/SlopCheck/issues"
+  },
+  "homepage": "https://github.com/ShervNariman/SlopCheck#readme",
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
@@ -19,7 +42,6 @@
       "onFail": "download"
     }
   },
-  "type": "module",
   "dependencies": {
     "commander": "^15.0.0",
     "execa": "^9.6.1",

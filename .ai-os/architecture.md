@@ -9,8 +9,9 @@ to add layers, plugins systems, or abstractions the MVP doesn't need yet.
 
 Tasks 001 (clean CLI structure), 001a (verification scripts), 002 (rule engine), 003 (findings
 model), 004 (core rules — satisfied by 002, closed retrospectively), 005 (risk scoring), 006
-(console reporter), 007 (JSON reporter), 008 (Markdown reporter), and 009 (tests) are complete.
-`src/cli.ts` is the CLI entrypoint only (Commander wiring, the
+(console reporter), 007 (JSON reporter), 008 (Markdown reporter), 009 (tests), 010 (README),
+011 (GitHub Action example), and 012 (npm publishing prep) are complete — all 12 numbered MVP
+backlog items are now done. `src/cli.ts` is the CLI entrypoint only (Commander wiring, the
 `diff` command's orchestration, exit-code setting, and the "no git diff" message). It no longer
 contains finding or risk-score formatting logic. Git diff reading lives in `src/git/diff.ts`.
 Rule execution matches the target layout below: `src/rules/types.ts` defines the `Rule`
@@ -92,6 +93,10 @@ src/
 
 - Wraps `execa` calls to `git diff --cached` (falling back to unstaged `git diff`).
 - Returns the raw diff text. No parsing of rule patterns here.
+- `getGitDiff(base?: string)` — implemented (task 011): when `base` is provided, runs
+  `git diff --unified=0 <base>...HEAD` instead of the staged/unstaged lookup, so CI can diff a
+  pull request's changes against a base ref (e.g. `origin/main`) even on a clean checkout.
+  Behavior when `base` is omitted is unchanged from before task 011.
 
 ### Rule engine (`src/engine/scan.ts` + `src/rules/`)
 
@@ -172,11 +177,25 @@ src/
   live in `src/config/` and let users enable/disable rules or set severity overrides. Do not
   build this until a backlog item explicitly calls for it.
 
-### GitHub Action (later)
+### GitHub Action
 
-- Not part of the CLI's own source. Lives as a documented example (e.g. a workflow YAML snippet
-  in the README or `.github/workflows/example.yml`) that runs `npx slopcheck diff` (or similar)
-  on pull requests using the JSON or Markdown reporter. See backlog item 11.
+- Implemented (task 011): `.github/workflows/slopcheck.yml` runs on `pull_request`, checks out
+  with `fetch-depth: 0`, builds the CLI with pnpm, and runs
+  `slopcheck diff --base origin/${{ github.base_ref }} --format markdown`, appending the result
+  to `$GITHUB_STEP_SUMMARY`. The step's exit code is SlopCheck's exit code, so a risky PR fails
+  the check. Documented in the README's "GitHub Actions" section. Posting results as an actual
+  PR comment (rather than a step summary) remains a roadmap item, not yet implemented.
+
+### npm publishing readiness
+
+- Implemented (task 012): `package.json` has npm-safe metadata (`name: "slopcheck"`,
+  `description`, `bin: { slopcheck: "dist/cli.js" }`, `files: ["dist", "README.md"]`,
+  `repository`/`bugs`/`homepage`/`keywords`/`author`/`license`, and a `prepublishOnly: "pnpm
+  build"` script). `tsup.config.ts` adds a `#!/usr/bin/env node` banner so `dist/cli.js` is
+  directly executable as a `bin` entry. `pnpm pack` has been verified to produce a tarball
+  containing only `dist/cli.js`, `dist/cli.d.ts`, `package.json`, and `README.md` — no
+  `.ai-os/`, `tests/`, `src/`, or `.github/` content. The package has **not** been published to
+  the npm registry — this is preparation only.
 
 ## Design principles for this architecture
 

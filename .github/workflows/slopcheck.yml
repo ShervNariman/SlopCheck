@@ -1,0 +1,33 @@
+name: SlopCheck
+
+on:
+  pull_request:
+
+jobs:
+  slopcheck:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build SlopCheck
+        run: pnpm build
+
+      - name: Run SlopCheck
+        run: |
+          pnpm tsx src/cli.ts diff --base "origin/${{ github.base_ref }}" --format markdown >> "$GITHUB_STEP_SUMMARY"

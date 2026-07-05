@@ -20,8 +20,8 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] Tests exist for core rules (`any`, `@ts-ignore`, `TODO`/`FIXME`/`HACK`, `console.log`,
       broad `catch`)
 - [x] README explains install and usage
-- [ ] GitHub Action example exists
-- [ ] npm publishing prep is complete (package metadata, `bin` entry, build output verified)
+- [x] GitHub Action example exists
+- [x] npm publishing prep is complete (package metadata, `bin` entry, build output verified)
 - [x] `pnpm test` passes
 - [x] `pnpm build` passes
 
@@ -40,8 +40,8 @@ Complete the SlopCheck MVP as a polished local CLI.
 - [x] 008 — Add Markdown reporter
 - [x] 009 — Add tests
 - [x] 010 — Add README
-- [ ] 011 — Add GitHub Action example
-- [ ] 012 — Prepare npm publishing
+- [x] 011 — Add GitHub Action example
+- [x] 012 — Prepare npm publishing
 
 > Update the checkboxes above as tasks complete. This section should always reflect
 > `backlog.md` and the state of `tasks/completed/`.
