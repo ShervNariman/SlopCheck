@@ -17,6 +17,7 @@ After an AI-assisted coding session, you want to know which lines in *this patch
 
 This is an early MVP. What works today:
 
+- npm package published — [`@shervnariman/slopcheck`](https://www.npmjs.com/package/@shervnariman/slopcheck)
 - `slopcheck diff` — scan staged changes (falls back to unstaged)
 - `--base <ref>` — diff against a base ref instead of local changes (for CI)
 - Five deterministic rules (see below)
@@ -25,33 +26,31 @@ This is an early MVP. What works today:
 - Exit code 1 when risk is high or a high-severity finding exists — usable as a CI gate (see
   [GitHub Actions](#github-actions) below)
 
-Not shipped yet: npm package install, config file, automatic PR comments.
+Not shipped yet: config file, automatic PR comments.
 
-## Install and run
+## Install and usage
 
-Requires [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/).
-
-```bash
-git clone https://github.com/ShervNariman/SlopCheck.git
-cd SlopCheck
-pnpm install
-pnpm build
-```
-
-Make a code change in a git repo, then scan it:
+Requires [Node.js](https://nodejs.org/). No install needed for one-off runs:
 
 ```bash
 # Default console output
-pnpm tsx src/cli.ts diff
+npx @shervnariman/slopcheck diff
 
 # JSON (for tooling/CI)
-pnpm tsx src/cli.ts diff --format json
+npx @shervnariman/slopcheck diff --format json
 
 # Markdown (for pasting into a PR comment)
-pnpm tsx src/cli.ts diff --format markdown
+npx @shervnariman/slopcheck diff --format markdown
 
 # Diff against a base ref instead of local changes (used in CI, see below)
-pnpm tsx src/cli.ts diff --base origin/main --format markdown
+npx @shervnariman/slopcheck diff --base origin/main --format markdown
+```
+
+For a global install, the command is still `slopcheck`:
+
+```bash
+npm install -g @shervnariman/slopcheck
+slopcheck diff
 ```
 
 If there is no diff, SlopCheck prints:
@@ -189,33 +188,8 @@ An example workflow is included at [`.github/workflows/slopcheck.yml`](.github/w
 This uses only free GitHub-hosted runners — no paid services or third-party actions requiring
 signup.
 
-## Future npm usage (not yet published)
-
-SlopCheck is not published to npm yet. Once it is, the plan is:
-
-```bash
-npx @shervnariman/slopcheck diff
-npx @shervnariman/slopcheck diff --format json
-npx @shervnariman/slopcheck diff --format markdown
-npx @shervnariman/slopcheck diff --base origin/main --format markdown
-```
-
-The installed command is still `slopcheck` (via the `bin` entry). For a global install:
-
-```bash
-npm install -g @shervnariman/slopcheck
-slopcheck diff
-```
-
-`package.json` is already prepared for this (`bin` entry, `files`, `prepublishOnly`,
-`publishConfig`), and `pnpm pack` has been verified to produce a correct tarball — but no
-version has been published to the npm registry yet. Until then, use the
-[local install steps](#install-and-run) above.
-
 ## Roadmap
 
-- **npm package** — publish to the registry so `npx @shervnariman/slopcheck diff` works without
-  cloning the repo
 - **More rules** — additional high-signal patterns as the set matures
 - **Config file** — enable/disable rules, severity overrides
 - **PR comment support** — post Markdown results directly on a pull request (beyond the step
@@ -223,9 +197,19 @@ version has been published to the npm registry yet. Until then, use the
 
 ## Development
 
+Clone and run from source:
+
+```bash
+git clone https://github.com/ShervNariman/SlopCheck.git
+cd SlopCheck
+pnpm install
+pnpm build
+pnpm tsx src/cli.ts diff
+```
+
 ```bash
 pnpm typecheck   # TypeScript check
-pnpm test        # Vitest (40 tests)
+pnpm test        # Vitest (43 tests)
 pnpm build       # Bundle to dist/
 ```
 
